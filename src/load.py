@@ -1,3 +1,5 @@
+# src/load.py
+
 from pymongo import MongoClient
 import mysql.connector
 from src.config import Config
@@ -32,15 +34,23 @@ def load_to_mysql(data_queue):
         )
         mycursor = mydb.cursor()
         sql = "INSERT INTO usuarios (nome, cpf, registro, optante) VALUES (%s, %s, %s, %s)"
+        inserted_count = 0
         while True:
             record = data_queue.get()
             if record is None:
                 break
             val = (record['nome'], record['cpf'], record['registro'], record['optante'])
-            mycursor.execute(sql, val)
-            data_queue.task_done()
-        mydb.commit()
-        print("Dados carregados para o MySQL.")
+            print(f"Tentando inserir no MySQL: {val}")
+            try:
+                mycursor.execute(sql, val)
+                inserted_count += 1
+                data_queue.task_done()
+                mydb.commit() # Commit após cada inserção (apenas para teste)
+                print(f"Registro inserido com sucesso.") # Adicionado log
+            except mysql.connector.Error as err:
+                print(f"Erro ao inserir registro no MySQL: {err}")
+                mydb.rollback()
+        print(f"Dados carregados para o MySQL. Total inserido: {inserted_count}")
     except Exception as e:
         print(f"Erro ao conectar ou inserir dados no MySQL: {e}")
     finally:
@@ -63,17 +73,17 @@ def start_mysql_load_workers(transformed_data_queue, num_workers=2):
         thread.start()
     return threads
 
-if __name__ == "__main__":
-    # Exemplo de uso (para teste)
-    import queue
-    raw_queue_test = queue.Queue()
-    raw_queue_test.put({"NOME_USUARIO": "Teste", "DOC_CPF": "111.222.333-44", "NUMERO_REGISTRO": "123", "OPTANTE": "Sim"})
-    start_mongodb_load_worker(raw_queue_test)
-
-    transformed_queue_test = queue.Queue()
-    transformed_queue_test.put({"nome": "teste", "cpf": "111.222.333-44", "registro": "123", "optante": 1})
-    threads_mysql = start_mysql_load_workers(transformed_queue_test)
-    for _ in threads_mysql:
-        transformed_queue_test.put(None)
-    for thread in threads_mysql:
-        thread.join()
+# if __name__ == "__main__":
+#     # Exemplo de uso (para teste)
+#     import queue
+#     raw_queue_test = queue.Queue()
+#     raw_queue_test.put({"NOME_USUARIO": "Teste", "DOC_CPF": "111.222.333-44", "NUMERO_REGISTRO": "123", "OPTANTE": "Sim"})
+#     start_mongodb_load_worker(raw_queue_test)
+#
+#     transformed_queue_test = queue.Queue()
+#     transformed_queue_test.put({"nome": "teste", "cpf": "111.222.333-44", "registro": "123", "optante": 1})
+#     threads_mysql = start_mysql_load_workers(transformed_queue_test)
+#     for _ in threads_mysql:
+#         transformed_queue_test.put(None)
+#     for thread in threads_mysql:
+#         thread.join()

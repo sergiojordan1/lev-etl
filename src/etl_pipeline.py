@@ -1,3 +1,5 @@
+# src/etl_pipeline.py
+
 import os
 from src.extract import start_extraction_workers
 from src.transform import start_transformation_workers
@@ -18,21 +20,28 @@ def main():
     # Fase de Extração
     print("Extraindo dados das planilhas...")
     raw_data_queue = start_extraction_workers(excel_files, num_workers=2)
-    print(f"Total de registros para carregar no MongoDB: {raw_data_queue.qsize()}")
+    raw_data_list_for_mongodb = list(raw_data_queue.queue) # Cria uma cópia da fila para o MongoDB
+    print(f"Total de registros para carregar no MongoDB: {len(raw_data_list_for_mongodb)}")
 
     # Fase de Load para MongoDB (paralelo à transformação)
     print("Carregando dados brutos para o MongoDB...")
-    mongodb_load_thread = start_mongodb_load_worker(raw_data_queue)
+    mongodb_load_queue = queue.Queue()
+    for record in raw_data_list_for_mongodb:
+        mongodb_load_queue.put(record)
+    mongodb_load_thread = start_mongodb_load_worker(mongodb_load_queue)
 
     # Fase de Transformação
     print("Transformando os dados...")
     transformed_data_queue = queue.Queue()
     transformation_threads = start_transformation_workers(raw_data_queue, transformed_data_queue, num_workers=4)
 
-    # Espera a extração e a transformação terminarem
+    print("Aguardando a conclusão da transformação...")
+    print(f"Tamanho da raw_data_queue antes do join: {raw_data_queue.qsize()}")
+    # Espera a transformação terminar
     raw_data_queue.join()
+    print(f"Tamanho da raw_data_queue após o join: {raw_data_queue.qsize()}")
     for _ in transformation_threads:
-        transformed_data_queue.put(None) # Sinaliza o fim para os workers de load do MySQL
+        raw_data_queue.put(None) # Sinaliza o fim para os workers de transformação
     for thread in transformation_threads:
         thread.join()
     mongodb_load_thread.join() # Espera o load do MongoDB terminar

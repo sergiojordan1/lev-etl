@@ -1,3 +1,5 @@
+# src/extract.py
+
 import pandas as pd
 import queue
 import threading
@@ -9,7 +11,8 @@ def extract_from_excel(file_path, data_queue):
     Extrai dados de um arquivo Excel e os coloca na fila.
     """
     try:
-        df = pd.read_excel(file_path)
+        # Força a leitura da coluna DOC_CPF como string
+        df = pd.read_excel(file_path, dtype={'DOC_CPF': str})
         records = df.to_dict('records')
         for record in records:
             data_queue.put(record)
@@ -35,13 +38,13 @@ def start_extraction_workers(file_paths, num_workers=2):
 
     return data_queue
 
-if __name__ == "__main__":
-    # Exemplo de uso para teste
-    data_dir = 'data'
-    excel_files = [os.path.join(data_dir, f) for f in os.listdir(data_dir) if f.endswith('.xlsx')]
-
-    if not excel_files:
-        print("Nenhum arquivo Excel encontrado na pasta 'data'.")
-    else:
-        raw_data_queue = start_extraction_workers(excel_files)
-        print(f"Total de registros extraídos: {raw_data_queue.qsize()}")
+# if __name__ == "__main__":
+#     # Exemplo de uso (para teste)
+#     data_dir = 'data'
+#     excel_files = [os.path.join(data_dir, f) for f in os.listdir(data_dir) if f.endswith('.xlsx')]
+#
+#     if not excel_files:
+#         print("Nenhum arquivo Excel encontrado na pasta 'data'.")
+#     else:
+#         raw_data_queue = start_extraction_workers(excel_files)
+#         print(f"Total de registros extraídos: {raw_data_queue.qsize()}")
