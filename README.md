@@ -95,6 +95,7 @@ Antes de executar o projeto, você precisará ter as seguintes ferramentas e sof
 
 ## Estrutura do Projeto
 
+```
 lev-etl/
 ├── data/
 │   ├── teste1.xlsx
@@ -107,6 +108,7 @@ lev-etl/
 │   └── etl_pipeline.py
 ├── .env
 └── README.md
+```
 
 
 * `data/`: Contém os arquivos Excel de entrada.
