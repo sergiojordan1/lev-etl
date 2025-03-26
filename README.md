@@ -31,9 +31,9 @@ Antes de executar o projeto, você precisará ter as seguintes ferramentas e sof
 
 ## Instalação
 
-1.  **Clone o repositório (se aplicável):** Se o código estiver em um repositório Git, clone-o para a sua máquina.
+1.  **Clone o repositório**
 
-2.  **Crie um ambiente virtual (recomendado):**
+2.  **Crie um ambiente virtual:**
     ```bash
     python -m venv .venv
     # Ou
@@ -83,7 +83,7 @@ Antes de executar o projeto, você precisará ter as seguintes ferramentas e sof
     * Se você usa senha no MySQL, adicione-a em `MYSQL_PASSWORD=sua_senha`.
 
 2.  **Coloque seus arquivos Excel na pasta `data`:**
-    Certifique-se de que os arquivos Excel que você deseja processar (por exemplo, `teste1.xlsx`, `teste2.xlsx`) estejam localizados dentro da pasta chamada `data` na raiz do projeto.
+    Certifique-se de que os arquivos Excel que você deseja processar (`teste1.xlsx`, `teste2.xlsx`) estejam localizados dentro da pasta chamada `data` na raiz do projeto.
 
 3.  **Execute o pipeline ETL:**
     Abra o seu terminal (certifique-se de que o ambiente virtual esteja ativado) e navegue até a raiz do diretório do projeto. Execute o seguinte comando:
