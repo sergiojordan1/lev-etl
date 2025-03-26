@@ -6,10 +6,6 @@ __pycache__/
 *.egg-info/
 .venv/
 
-# Data and Logs
-data/
-logs/
-
 # IDE specific files
 .idea/
 .vscode/
